@@ -1,11 +1,12 @@
 <template>
-  <h1 class="text-2xl font-semibold mb-4">Login</h1>
+  <h1 class="text-2xl font-semibold mb-4">Inicio de Sesión</h1>
   <form @submit.prevent="onLogin">
     <!-- Username Input -->
     <div class="mb-4">
       <label for="email" class="block text-gray-600">Correo Electronico</label>
       <input
         v-model="myForm.email"
+        ref="emailInputRef"
         type="text"
         id="email"
         name="email"
@@ -18,6 +19,7 @@
       <label for="password" class="block text-gray-600">Contrasena</label>
       <input
         v-model="myForm.password"
+        ref="passwordInputRef"
         type="password"
         id="password"
         name="password"
@@ -45,23 +47,24 @@
       type="submit"
       class="bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 px-4 w-full"
     >
-      Login
+      Ingresar
     </button>
   </form>
   <!-- Sign up  Link -->
   <div class="mt-6 text-blue-500 text-center">
-    <RouterLink :to="{ name: 'register' }" class="hover:underline">Sign up Here</RouterLink>
+    <RouterLink :to="{ name: 'register' }" class="hover:underline">Crear cuenta aqui</RouterLink>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { reactive, ref, watchEffect } from 'vue';
 import { useAuthStore } from '../stores/auth.store';
+import { useToast } from 'vue-toastification';
 
-const router = useRouter();
-
-const authStore = useAuthStore()
+const authStore = useAuthStore();
+const toast = useToast();
+const emailInputRef = ref<HTMLInputElement | null>(null);
+const passwordInputRef = ref<HTMLInputElement | null>(null);
 
 const myForm = reactive({
   email: '',
@@ -69,13 +72,34 @@ const myForm = reactive({
   rememberMe: false,
 });
 
-
-
-
 const onLogin = async () => {
-    
-    const ok = await authStore.login(myForm.email, myForm.password)
-    console.log("🚀 ~ onLogin ~ ok:", ok)
-    
+  if (myForm.email == '') {
+    return emailInputRef.value?.focus();
+  }
+
+  if (myForm.password.length < 6) {
+    return passwordInputRef.value?.focus();
+  }
+
+  if (myForm.rememberMe) {
+    localStorage.setItem('email', myForm.email);
+  } else {
+    localStorage.removeItem('email');
+  }
+
+  const ok = await authStore.login(myForm.email, myForm.password);
+
+  if (ok) return;
+
+  toast.error('Usuario/Contraseña no son correctos');
 };
+
+watchEffect(() => {
+  const email = localStorage.getItem('email');
+
+  if (email) {
+    myForm.email = email;
+    myForm.rememberMe = true;
+  }
+});
 </script>
