@@ -9,7 +9,7 @@ interface CheckError {
 interface CheckSuccess {
   ok: true;
   user: User;
-  token: string;
+  token: string;    
 }
 
 export const checkAuthAction = async (): Promise<CheckError | CheckSuccess> => {

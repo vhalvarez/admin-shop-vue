@@ -1,7 +1,7 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { AuthStatus, type User } from '../interfaces';
-import { checkAuthAction, loginAction, registerAction } from '../actions';
+import { loginAction, registerAction, checkAuthAction } from '../actions';
 import { useLocalStorage } from '@vueuse/core';
 
 export const useAuthStore = defineStore('auth', () => {
@@ -81,15 +81,13 @@ export const useAuthStore = defineStore('auth', () => {
     // Getters
     isCheking: computed(() => authStatus.value === AuthStatus.Checking),
     isAuthenticated: computed(() => authStatus.value === AuthStatus.Authenticated),
-
-    // TODO: getter para saber si es admin o no
-
+    isAdmin: computed(() => user.value?.roles.includes('admin') ?? false),
     username: computed(() => user.value?.fullName),
 
     // Actions
     login,
     logout,
     register,
-    checkAuthStatus
+    checkAuthStatus,
   };
 });
